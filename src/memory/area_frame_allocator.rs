@@ -1,3 +1,4 @@
+//! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 use memory::{Frame, FrameAllocator};
 use multiboot2::{MemoryAreaIter, MemoryArea};
 

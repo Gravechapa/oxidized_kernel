@@ -1,3 +1,4 @@
+;Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 section .multiboot_header
 header_start:
     dd 0xe85250d6                ; magic number (multiboot 2)
@@ -20,6 +21,7 @@ extern long_mode_start
 section .text
 bits 32
 start:
+    ;Set the stack pointer
     mov esp, stack_top
     ;to rust main
     mov edi, ebx
@@ -31,6 +33,7 @@ start:
     call set_up_page_tables
     call enable_paging
     
+    ;to rust main second
     mov esi, dword[p2_table]
     
     lgdt [gdt64.pointer]

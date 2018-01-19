@@ -1,3 +1,4 @@
+//! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 #[derive(Debug, Clone, Copy)]
 #[allow(dead_code)]
 #[repr(u8)]

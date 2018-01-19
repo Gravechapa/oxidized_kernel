@@ -1,3 +1,4 @@
+//! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 use memory::Frame;
 
 bitflags!
@@ -17,37 +18,37 @@ bitflags!
     }
 }
 
-///Точка входа (указатель на следующую страницу + флаги)
+/// Точка входа (указатель на следующую страницу + флаги)
 pub struct Entry(u64);
 
 impl Entry
 {
-    ///Проверяет активна ли страница
+    /// Проверяет активна ли страница
     pub fn is_unused(&self) -> bool
     {
         self.0 == 0
     }
 
-    ///Делает страницу не активной
+    /// Делает страницу не активной
     pub fn set_unused(&mut self)
     {
         self.0 = 0;
     }
 
-    ///Устанавливает флаги
+    /// Устанавливает флаги и физический адрес
     pub fn set(&mut self, frame: Frame, flags: EntryFlags)
     {
         assert!(frame.start_address() & !0x000fffff_fffff000 == 0);
         self.0 = (frame.start_address() as u64) | flags.bits();
     }
 
-    ///Возвращает текущие флаги
+    /// Возвращает текущие флаги
     pub fn flags(&self) -> EntryFlags
     {
         EntryFlags::from_bits_truncate(self.0)
     }
 
-    ///Возвращает физическую облость на которую указывает точка входа
+    /// Возвращает физическую область на которую указывает точка входа
     pub fn pointed_frame(&self) -> Option<Frame>
     {
         if self.flags().contains(EntryFlags::PRESENT)

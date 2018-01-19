@@ -1,3 +1,4 @@
+//! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 pub mod area_frame_allocator;
 mod paging;
 
@@ -24,7 +25,13 @@ impl Frame
         Frame{number: address / PAGE_SIZE}
     }
 
-    fn start_address(&self) -> PhysicalAddress {
+    fn start_address(&self) -> PhysicalAddress
+    {
         self.number * PAGE_SIZE
+    }
+
+    fn clone(&self) -> Frame
+    {
+        Frame {number: self.number}
     }
 }

@@ -9,6 +9,7 @@ extern crate spin;
 extern crate multiboot2;
 #[macro_use]
 extern crate bitflags;
+extern crate x86_64;
 
 
 #[macro_use]
@@ -60,15 +61,7 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
         kernel_start as usize, kernel_end as usize, mboot_start,
         mboot_end, mmap_tag.memory_areas());
 
-    for i in 0..
-    {
-        if let None = frame_allocator.allocate_frame()
-        {
-            println!("allocated {} frames", i);
-            break;
-        }
-    }
-
+    println!("{}", test);
     let test1 = 0o177777_777_777_777_777_0002 as *mut i64;
     /*unsafe {
         *test1 = 10;

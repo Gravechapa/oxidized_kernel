@@ -1,3 +1,4 @@
+;Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 global long_mode_start
 
 section .text
