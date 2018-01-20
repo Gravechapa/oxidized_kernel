@@ -3,6 +3,12 @@ name = "oxidized_kernel"
 version = "0.1.0"
 authors = ["Gravechapa <Gravechapa@protonmail.com>"]
 
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
 [lib]
 crate-type = ["staticlib"]
 

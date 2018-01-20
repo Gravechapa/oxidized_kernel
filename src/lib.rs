@@ -20,6 +20,8 @@ mod memory;
 #[no_mangle]
 pub extern fn rust_main(mboot_address: usize, test: usize)
 {
+    enable_nxe_bit();
+    enable_write_protect_bit();
     let mboot_info = unsafe{multiboot2::load(mboot_address)};
     let mmap_tag = mboot_info.memory_map_tag()
     .expect("Memory map tag required");
@@ -61,6 +63,8 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
         kernel_start as usize, kernel_end as usize, mboot_start,
         mboot_end, mmap_tag.memory_areas());
 
+    memory::remap_the_kernel(&mut frame_allocator, mboot_info);
+
     println!("{}", test);
     let test1 = 0o177777_777_777_777_777_0002 as *mut i64;
     /*unsafe {
@@ -80,4 +84,23 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     println!("\n\nPANIC in {} at line {}:", file, line);
     println!("    {}", fmt);
     loop{}
+}
+
+fn enable_nxe_bit()
+{
+    use x86_64::registers::msr::{IA32_EFER, rdmsr, wrmsr};
+
+    let nxe_bit = 1 << 11;
+    unsafe
+        {
+            let efer = rdmsr(IA32_EFER);
+            wrmsr(IA32_EFER, efer | nxe_bit);
+        }
+}
+
+fn enable_write_protect_bit()
+{
+    use x86_64::registers::control_regs::{cr0, cr0_write, Cr0};
+
+    unsafe {cr0_write(cr0() | Cr0::WRITE_PROTECT)};
 }

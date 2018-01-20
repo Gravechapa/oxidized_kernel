@@ -6,7 +6,7 @@ use super::entry::EntryFlags;
 
 pub struct InactivePageTable
 {
-    p4_frame: Frame,
+    pub p4_frame: Frame,
 }
 
 impl InactivePageTable
@@ -25,10 +25,5 @@ impl InactivePageTable
         temporary_page.unmap(active_table);
 
         InactivePageTable {p4_frame: frame}
-    }
-
-    pub fn get_frame(&mut self) -> Frame
-    {
-        self.p4_frame.clone()
     }
 }

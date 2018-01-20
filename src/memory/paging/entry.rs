@@ -1,5 +1,6 @@
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 use memory::Frame;
+use multiboot2::ElfSection;
 
 bitflags!
 {
@@ -17,6 +18,36 @@ bitflags!
         const NO_EXECUTE =      1 << 63;
     }
 }
+
+impl EntryFlags
+{
+    pub fn from_elf_section_flags(section: &ElfSection) -> EntryFlags
+    {
+        use multiboot2::{ELF_SECTION_ALLOCATED, ELF_SECTION_WRITABLE,
+                         ELF_SECTION_EXECUTABLE};
+
+        let mut flags = EntryFlags::empty();
+
+        if section.flags().contains(ELF_SECTION_ALLOCATED)
+            {
+                // section is loaded to memory
+                flags = flags | EntryFlags::PRESENT;
+            }
+
+        if section.flags().contains(ELF_SECTION_WRITABLE)
+            {
+                flags = flags | EntryFlags::WRITABLE;
+            }
+
+        if !section.flags().contains(ELF_SECTION_EXECUTABLE)
+            {
+                flags = flags | EntryFlags::NO_EXECUTE;
+            }
+
+        flags
+    }
+}
+
 
 /// Точка входа (указатель на следующую страницу + флаги)
 pub struct Entry(u64);

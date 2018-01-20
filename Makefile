@@ -18,7 +18,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 -d int -no-reboot -cdrom $(iso)
 	
 debug: $(iso)
 	@nohup qemu-system-x86_64 -cdrom $(iso) -s -S > /dev/null 2>&1 &

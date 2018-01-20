@@ -33,7 +33,7 @@ impl DerefMut for ActivePageTable
 
 impl ActivePageTable
 {
-    unsafe fn new() -> ActivePageTable
+    pub unsafe fn new() -> ActivePageTable
     {
         ActivePageTable
             {
@@ -59,7 +59,7 @@ impl ActivePageTable
             let p4_table = temporary_page.map_table_frame(backup.clone(), self);
 
             // overwrite recursive mapping
-            self.p4_mut()[511].set(table.get_frame(),
+            self.p4_mut()[511].set(table.p4_frame.clone(),
                                    EntryFlags::PRESENT | EntryFlags::WRITABLE);
             tlb::flush_all();
 
@@ -72,4 +72,22 @@ impl ActivePageTable
         }
         temporary_page.unmap(self);
     }
+
+    pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable
+    {
+        use x86_64::PhysicalAddress;
+        use x86_64::registers::control_regs;
+
+        let old_table = InactivePageTable
+            {
+                p4_frame: Frame::containing_address(control_regs::cr3().0 as usize),
+            };
+
+        unsafe
+            {
+                control_regs::cr3_write(PhysicalAddress(new_table.p4_frame.start_address() as u64));
+            }
+        old_table
+    }
+
 }
