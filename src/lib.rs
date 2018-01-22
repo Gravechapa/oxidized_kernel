@@ -5,6 +5,7 @@
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(global_allocator)]
+#![feature(abi_x86_interrupt)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -17,12 +18,15 @@ extern crate x86_64;
 extern crate alloc;
 #[macro_use]
 extern crate once;
+#[macro_use]
+extern crate lazy_static;
 
 
 
 #[macro_use]
 mod vga_text_buffer;
 mod memory;
+mod interrupts;
 
 use memory::heap_allocator::BumpAllocator;
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
@@ -43,6 +47,10 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
     vga_text_buffer::clear_screen();
 
     memory::init(mboot_info);
+
+    interrupts::init();
+
+    x86_64::instructions::interrupts::int3();
 
     use alloc::boxed::Box;
     let heap_test = Box::new(42);
