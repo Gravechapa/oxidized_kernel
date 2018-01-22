@@ -139,6 +139,6 @@ impl Mapper
         tlb::flush(VirtualAddress(page.start_address()));
 
         // TODO free p(1,2,3) table if empty
-        allocator.deallocate_frame(frame);
+        //allocator.deallocate_frame(frame);
     }
 }

@@ -2,6 +2,9 @@
 #![no_std]
 #![feature(unique)]
 #![feature(const_fn)]
+#![feature(alloc)]
+#![feature(allocator_api)]
+#![feature(global_allocator)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -10,11 +13,24 @@ extern crate multiboot2;
 #[macro_use]
 extern crate bitflags;
 extern crate x86_64;
+#[macro_use]
+extern crate alloc;
+#[macro_use]
+extern crate once;
+
 
 
 #[macro_use]
 mod vga_text_buffer;
 mod memory;
+
+use memory::heap_allocator::BumpAllocator;
+pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+
+#[global_allocator]
+static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
+                                                          HEAP_START + HEAP_SIZE);
 
 
 #[no_mangle]
@@ -23,47 +39,13 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
     enable_nxe_bit();
     enable_write_protect_bit();
     let mboot_info = unsafe{multiboot2::load(mboot_address)};
-    let mmap_tag = mboot_info.memory_map_tag()
-    .expect("Memory map tag required");
 
-    use vga_text_buffer::*;
-    clear_screen();
-    println!("  memory areas:");
-    for area in mmap_tag.memory_areas()
-    {
-        println!("    start: 0x{:x}, length: 0x{:x}",
-        area.base_addr, area.length);
-    }
+    vga_text_buffer::clear_screen();
 
-    let elf_sections_tag = mboot_info.elf_sections_tag()
-        .expect("Elf-sections tag required");
+    memory::init(mboot_info);
 
-    println!("  kernel sections:");
-    for section in elf_sections_tag.sections() 
-    {
-        println!("    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-            section.addr, section.size, section.flags);
-    }
-
-    let kernel_start = elf_sections_tag.sections().map(|s| s.addr)
-    .min().unwrap();
-    let kernel_end = elf_sections_tag.sections().map(|s| s.addr + s.size)
-    .max().unwrap();
-
-    let mboot_start = mboot_address;
-    let mboot_end = mboot_start + (mboot_info.total_size as usize);
-
-    println!("    kernel_start: {}, kernel_end: {}\n    mboot_start: {}, mboot_end: {}",
-    kernel_start, kernel_end, mboot_start, mboot_end);
-
-    use memory::area_frame_allocator::*;
-    use memory::FrameAllocator;
-
-    let mut frame_allocator = AreaFrameAllocator::new(
-        kernel_start as usize, kernel_end as usize, mboot_start,
-        mboot_end, mmap_tag.memory_areas());
-
-    memory::remap_the_kernel(&mut frame_allocator, mboot_info);
+    use alloc::boxed::Box;
+    let heap_test = Box::new(42);
 
     println!("{}", test);
     let test1 = 0o177777_777_777_777_777_0002 as *mut i64;

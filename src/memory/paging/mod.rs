@@ -1,5 +1,5 @@
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
-mod entry;
+pub mod entry;
 mod table;
 mod active_table;
 mod temporary_page;
@@ -13,15 +13,39 @@ use self::inactive_table::InactivePageTable;
 use self::temporary_page::TemporaryPage;
 
 
-
 /// Количество точек входа на странице
 const ENTRY_COUNT: usize = 512;
 
 pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
+pub struct PageIter
+{
+    start: Page,
+    end: Page,
+}
+
+impl Iterator for PageIter
+{
+    type Item = Page;
+
+    fn next(&mut self) -> Option<Page>
+    {
+        if self.start <= self.end
+            {
+                let page = self.start;
+                self.start.number += 1;
+                Some(page)
+            }
+        else
+            {
+                None
+            }
+    }
+}
+
 /// Виртуальная страница
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page
 {
     number: usize,
@@ -61,9 +85,18 @@ impl Page
         (self.number >> 0) & 0o777
     }
 
+    pub fn range_inclusive(start: Page, end: Page) -> PageIter
+    {
+        PageIter
+            {
+                start: start,
+                end: end,
+            }
+    }
+
 }
 
-pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
+pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> ActivePageTable
     where A: FrameAllocator
 {
     let mut temporary_page = TemporaryPage::new(Page {number: 0xbabebeef}, allocator);
@@ -95,7 +128,7 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
                     assert!(section.start_address() % PAGE_SIZE == 0,
                             "sections need to be page aligned");
 
-                    println!("    mapping section at addr: {:#x}, size: {:#x}",
+                    println!("  mapping section at addr: {:#x}, size: {:#x}",
                              section.addr, section.size);
 
                     let flags = EntryFlags::from_elf_section_flags(section);
@@ -128,4 +161,6 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
     active_table.unmap(old_p4_page, allocator);
     println!("  guard page at {:#x}", old_p4_page.start_address());
+
+    active_table
 }
