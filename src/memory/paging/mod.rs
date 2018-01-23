@@ -1,7 +1,7 @@
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/)
 pub mod entry;
 mod table;
-mod active_table;
+pub mod active_table;
 mod temporary_page;
 mod inactive_table;
 mod mapper;
@@ -11,6 +11,7 @@ use multiboot2::BootInformation;
 use self::active_table::ActivePageTable;
 use self::inactive_table::InactivePageTable;
 use self::temporary_page::TemporaryPage;
+use core::ops::Add;
 
 
 /// Количество точек входа на странице
@@ -19,6 +20,7 @@ const ENTRY_COUNT: usize = 512;
 pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
+#[derive(Clone)]
 pub struct PageIter
 {
     start: Page,
@@ -51,6 +53,16 @@ pub struct Page
     number: usize,
 }
 
+impl Add<usize> for Page
+{
+    type Output = Page;
+
+    fn add(self, rhs: usize) -> Page
+    {
+        Page {number: self.number + rhs}
+    }
+}
+
 impl Page
 {
     /// Возвращает страницу виртуальной памяти в случае если адрес валиден
@@ -63,7 +75,7 @@ impl Page
     }
 
     /// Возвращает виртуальный адрес начала страницы
-    fn start_address(&self) -> usize
+    pub fn start_address(&self) -> usize
     {
         self.number * PAGE_SIZE
     }

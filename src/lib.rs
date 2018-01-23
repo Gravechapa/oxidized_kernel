@@ -20,6 +20,7 @@ extern crate alloc;
 extern crate once;
 #[macro_use]
 extern crate lazy_static;
+extern crate bit_field;
 
 
 
@@ -46,11 +47,16 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
 
     vga_text_buffer::clear_screen();
 
-    memory::init(mboot_info);
+    let mut memory_controller = memory::init(mboot_info);
 
-    interrupts::init();
+    interrupts::init(&mut memory_controller);
 
-    x86_64::instructions::interrupts::int3();
+    fn stack_overflow() {
+        stack_overflow(); // for each recursion, the return address is pushed
+    }
+
+    // trigger a stack overflow
+    stack_overflow();
 
     use alloc::boxed::Box;
     let heap_test = Box::new(42);

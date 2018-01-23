@@ -2,12 +2,14 @@
 pub mod area_frame_allocator;
 mod paging;
 pub mod heap_allocator;
+mod stack_allocator;
 
 use self::paging::PhysicalAddress;
 pub use self::paging::remap_the_kernel;
 use multiboot2::BootInformation;
+pub use self::stack_allocator::Stack;
 
-pub fn init(mboot_info: &BootInformation)
+pub fn init(mboot_info: &BootInformation) -> MemoryController
 {
     assert_has_not_been_called!("memory::init must be called only once");
     use memory::area_frame_allocator::AreaFrameAllocator;
@@ -43,6 +45,40 @@ pub fn init(mboot_info: &BootInformation)
         {
             active_table.map(page, paging::entry::EntryFlags::WRITABLE, &mut frame_allocator);
         }
+
+    let stack_allocator =
+        {
+            let stack_alloc_start = heap_end_page + 1;
+            let stack_alloc_end = stack_alloc_start + 100;
+            let stack_alloc_range = Page::range_inclusive(stack_alloc_start,
+                                                          stack_alloc_end);
+            stack_allocator::StackAllocator::new(stack_alloc_range)
+        };
+
+    MemoryController
+        {
+            active_table: active_table,
+            frame_allocator: frame_allocator,
+            stack_allocator: stack_allocator,
+        }
+}
+
+pub struct MemoryController
+{
+    active_table: paging::active_table::ActivePageTable,
+    frame_allocator: area_frame_allocator::AreaFrameAllocator,
+    stack_allocator: stack_allocator::StackAllocator,
+}
+
+impl MemoryController
+{
+    pub fn alloc_stack(&mut self, size_in_pages: usize) -> Option<Stack>
+    {
+        let &mut MemoryController {ref mut active_table,
+                                    ref mut frame_allocator,
+                                    ref mut stack_allocator} = self;
+        stack_allocator.alloc_stack(active_table, frame_allocator, size_in_pages)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
