@@ -8,6 +8,7 @@ use self::paging::PhysicalAddress;
 pub use self::paging::remap_the_kernel;
 use multiboot2::BootInformation;
 pub use self::stack_allocator::Stack;
+use self::paging::entry::EntryFlags;
 
 pub fn init(mboot_info: &BootInformation) -> MemoryController
 {
@@ -43,7 +44,7 @@ pub fn init(mboot_info: &BootInformation) -> MemoryController
 
     for page in Page::range_inclusive(heap_start_page, heap_end_page)
         {
-            active_table.map(page, paging::entry::EntryFlags::WRITABLE, &mut frame_allocator);
+            active_table.map(page, EntryFlags::WRITABLE, &mut frame_allocator);
         }
 
     let stack_allocator =

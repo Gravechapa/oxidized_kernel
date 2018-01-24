@@ -6,6 +6,10 @@
 #![feature(allocator_api)]
 #![feature(global_allocator)]
 #![feature(abi_x86_interrupt)]
+#![feature(naked_functions)]
+#![feature(core_intrinsics)]
+
+#![feature(asm)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -21,6 +25,8 @@ extern crate once;
 #[macro_use]
 extern crate lazy_static;
 extern crate bit_field;
+#[macro_use]
+extern crate raw_cpuid;
 
 
 
@@ -28,8 +34,12 @@ extern crate bit_field;
 mod vga_text_buffer;
 mod memory;
 mod interrupts;
+mod syscall;
+mod devices;
 
 use memory::heap_allocator::BumpAllocator;
+use devices::apic;
+
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
@@ -41,7 +51,7 @@ static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
 #[no_mangle]
 pub extern fn rust_main(mboot_address: usize, test: usize)
 {
-    enable_nxe_bit();
+    enable_extended_feature();
     enable_write_protect_bit();
     let mboot_info = unsafe{multiboot2::load(mboot_address)};
 
@@ -51,12 +61,26 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
 
     interrupts::init(&mut memory_controller);
 
-    fn stack_overflow() {
+    unsafe {syscall::init()};
+
+    apic::init();
+
+
+    /*let mut a:i64 = 10;
+    unsafe{asm!("
+                 syscall"
+                :
+                :
+                :
+                :"intel", "volatile");}
+    println!("{}",a);*/
+
+  /*  fn stack_overflow() {
         stack_overflow(); // for each recursion, the return address is pushed
     }
 
     // trigger a stack overflow
-    stack_overflow();
+    stack_overflow();*/
 
     use alloc::boxed::Box;
     let heap_test = Box::new(42);
@@ -82,15 +106,16 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     loop{}
 }
 
-fn enable_nxe_bit()
+fn enable_extended_feature()
 {
     use x86_64::registers::msr::{IA32_EFER, rdmsr, wrmsr};
 
     let nxe_bit = 1 << 11;
+    let syscall_bit = 1;
     unsafe
         {
             let efer = rdmsr(IA32_EFER);
-            wrmsr(IA32_EFER, efer | nxe_bit);
+            wrmsr(IA32_EFER, efer | nxe_bit | syscall_bit);
         }
 }
 

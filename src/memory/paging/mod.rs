@@ -13,6 +13,8 @@ use self::inactive_table::InactivePageTable;
 use self::temporary_page::TemporaryPage;
 use core::ops::Add;
 
+use devices::apic::{get_base_address, check_x2apic};
+
 
 /// Количество точек входа на странице
 const ENTRY_COUNT: usize = 512;
@@ -163,6 +165,19 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
             for frame in Frame::range_inclusive(mboot_start, mboot_end)
                 {
                     mapper.identity_map(frame, EntryFlags::PRESENT, allocator);
+                }
+
+            // apic
+            if !check_x2apic()
+                {
+                    let start_frame = Frame::containing_address(get_base_address() as usize);
+                    let end_frame = Frame::containing_address(get_base_address() as usize + 0x530);
+                    for frame in Frame::range_inclusive(start_frame, end_frame)
+                        {
+                            mapper.identity_map(frame, EntryFlags::WRITABLE |
+                                                                EntryFlags::NO_EXECUTE, allocator);
+                        }
+
                 }
         });
 
