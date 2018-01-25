@@ -8,7 +8,16 @@ header_start:
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
 
     ; insert optional multiboot tags here
+    
+    ;framebuffer
 
+;    dw 5
+;    dw
+;    dd 20
+;    dd 800
+;    dd 600
+;    dd 0
+    
     ; required end tag
     dw 0    ; type
     dw 0    ; flags

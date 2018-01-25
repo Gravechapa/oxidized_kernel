@@ -31,7 +31,7 @@ extern crate raw_cpuid;
 
 
 #[macro_use]
-mod vga_text_buffer;
+mod framebuffer;
 mod memory;
 mod interrupts;
 mod syscall;
@@ -55,7 +55,7 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
     enable_write_protect_bit();
     let mboot_info = unsafe{multiboot2::load(mboot_address)};
 
-    vga_text_buffer::clear_screen();
+    framebuffer::clear_screen();
 
     let mut memory_controller = memory::init(mboot_info);
 
@@ -65,6 +65,16 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
 
     apic::init();
 
+    use alloc::String;
+    let rsdp = mboot_info.acpi_2_tag().expect("").get_rsdp();
+    unsafe{println!("{:?}\n {}\n {}", rsdp, String::from_raw_parts( rsdp.signature.as_ptr() as *mut u8, 8, 8),
+                    String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
+
+
+    let framebuffer = mboot_info.framebuffer_tag().expect("");
+    let frame_collor = framebuffer.get_direct_rgb_color().expect("");
+    let pixel: *mut u32 = framebuffer.framebuffer_addr as *mut _;
+    unsafe {*pixel = 0xffffff}
 
     /*let mut a:i64 = 10;
     unsafe{asm!("
