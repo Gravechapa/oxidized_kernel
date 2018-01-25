@@ -1,6 +1,7 @@
 arch ?= x86_64
 kernel := build/oxidized_kernel-$(arch).bin
 iso := build/os-$(arch).iso
+efi_iso := build/os-$(arch)-efi.iso
 target ?= $(arch)-oxidized_kernel
 rust_os := target/$(target)/debug/liboxidized_kernel.a
 
@@ -35,11 +36,20 @@ cgdb: debug
 
 iso: $(iso)
 
+efi_iso: $(efi_iso)
+
 $(iso): $(kernel) $(grub_cfg)
 	@mkdir -p build/isofiles/boot/grub
 	@cp $(kernel) build/isofiles/boot/kernel.bin
 	@cp $(grub_cfg) build/isofiles/boot/grub
 	@pkgdatadir=/usr/share/grub grub-mkrescue -d /usr/lib/grub/i386-pc -o $(iso) build/isofiles
+	@rm -r build/isofiles
+	
+$(efi_iso): $(kernel) $(grub_cfg)
+	@mkdir -p build/isofiles/boot/grub
+	@cp $(kernel) build/isofiles/boot/kernel.bin
+	@cp $(grub_cfg) build/isofiles/boot/grub
+	@pkgdatadir=/usr/share/grub grub-mkrescue -d /usr/lib/grub/x86_64-efi -o $(efi_iso) build/isofiles
 	@rm -r build/isofiles
 
 
