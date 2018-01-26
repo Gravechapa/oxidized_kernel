@@ -9,14 +9,16 @@ header_start:
 
     ; insert optional multiboot tags here
     
+    
+    
     ;framebuffer
 
 ;    dw 5
 ;    dw
 ;    dd 20
-;    dd 800
-;    dd 600
 ;    dd 0
+;    dd 0
+;    dd 2
     
     ; required end tag
     dw 0    ; type

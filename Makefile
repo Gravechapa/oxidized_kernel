@@ -21,8 +21,15 @@ clean:
 run: $(iso)
 	@qemu-system-x86_64 -d int -no-reboot -cdrom $(iso)
 	
+run_efi: $(efi_iso)
+	@qemu-system-x86_64 -d int -no-reboot -cdrom $(efi_iso) -drive if=pflash,format=raw,readonly,file=./ovmf_code_x64.bin -drive if=pflash,format=raw,file=./ovmf_vars_x64.bin
+	
 debug: $(iso)
 	@nohup qemu-system-x86_64 -cdrom $(iso) -s -S > /dev/null 2>&1 &
+	
+debug_efi: $(iso)
+	@nohup qemu-system-x86_64 -cdrom $(efi_iso) -s -S -drive if=pflash,format=raw,readonly,file=./ovmf_code_x64.bin -drive if=pflash,format=raw,file=./ovmf_vars_x64.bin > /dev/null 2>&1 &
+	
 	
 #lldb: debug
 #	@rust-lldb "build/oxidized_kernel-x86_64.bin" -o "gdb-remote 1234"
@@ -33,6 +40,11 @@ gdb: debug
 cgdb: debug
 	@cgdb -d rust-gdb "build/oxidized_kernel-x86_64.bin" -ex "target remote :1234"
 
+gdb_efi: debug_efi
+	@rust-gdb "build/oxidized_kernel-x86_64.bin" -ex "target remote :1234"
+	
+cgdb_efi: debug_efi
+	@cgdb -d rust-gdb "build/oxidized_kernel-x86_64.bin" -ex "target remote :1234"
 
 iso: $(iso)
 
