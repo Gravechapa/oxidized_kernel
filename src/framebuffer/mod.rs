@@ -1,4 +1,5 @@
 mod vga_text_buffer;
+mod rgb_framebuffer;
 
 use core::fmt::Write;
 use core::fmt;
@@ -14,6 +15,7 @@ macro_rules! print {
 
 pub fn print(args: fmt::Arguments)
 {
+    return;
     WRITER.lock().write_fmt(args).unwrap();
 }
 

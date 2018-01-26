@@ -72,10 +72,13 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
 
 
     let framebuffer = mboot_info.framebuffer_tag().expect("");
-    let frame_collor = framebuffer.get_direct_rgb_color().expect("");
-    let pixel: *mut u32 = framebuffer.framebuffer_addr as *mut _;
-    unsafe {*pixel = 0xffffff}
-
+    let frame_color = framebuffer.get_direct_rgb_color().expect("");
+    let mut address: *mut u32 = framebuffer.framebuffer_addr as *mut _;
+    for i in 0..framebuffer.framebuffer_width * framebuffer.framebuffer_height
+    {
+        unsafe {*address = 0xffffff}
+        address = (address as u64 + 4) as *mut u32;
+    }
     /*let mut a:i64 = 10;
     unsafe{asm!("
                  syscall"

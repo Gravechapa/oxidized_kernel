@@ -156,20 +156,19 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
                 }
 
             // identity map the framebuffer
-            let framebuffer = boot_info.framebuffer_tag().expect("Framebuffer!");
-            let start_frame = Frame::containing_address(framebuffer.framebuffer_addr as usize);
-            let end_frame = Frame::containing_address((framebuffer.framebuffer_addr +
-                (framebuffer.framebuffer_pitch * framebuffer.framebuffer_height) as u64) as usize - 1);
-            for frame in Frame::range_inclusive(start_frame, end_frame)
+            if boot_info.framebuffer_tag().is_some()
                 {
-                    mapper.identity_map(frame, EntryFlags::WRITABLE |
-                        EntryFlags::NO_EXECUTE, allocator);
+                    let framebuffer = boot_info.framebuffer_tag().expect("Framebuffer!");
+                    let start_frame = Frame::containing_address(framebuffer.framebuffer_addr as usize);
+                    let end_frame = Frame::containing_address((framebuffer.framebuffer_addr +
+                        (framebuffer.framebuffer_pitch * framebuffer.framebuffer_height) as u64) as usize - 1);
+                    for frame in Frame::range_inclusive(start_frame, end_frame)
+                        {
+                            mapper.identity_map(frame, EntryFlags::WRITABLE |
+                                EntryFlags::NO_EXECUTE, allocator);
+                        }
                 }
-            /*
-            let vga_buffer_frame = Frame::containing_address(0xb8000);
-            mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
-            */
-            // identity map the multiboot info structure
+
             let mboot_start = Frame::containing_address(boot_info.start_address());
             let mboot_end = Frame::containing_address(boot_info.end_address() - 1);
             for frame in Frame::range_inclusive(mboot_start, mboot_end)
