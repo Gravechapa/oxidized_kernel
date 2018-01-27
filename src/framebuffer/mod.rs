@@ -1,5 +1,5 @@
 mod vga_text_buffer;
-mod rgb_framebuffer;
+pub mod rgb_framebuffer;
 
 use core::fmt::Write;
 use core::fmt;

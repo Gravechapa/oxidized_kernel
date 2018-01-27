@@ -1,4 +1,61 @@
-const FONT_8X16: [u8; 4096] = [
+pub const LOOKUP_TABLE_8BIT: [u32; 16] = [
+    0x00000000,
+    0xff000000,
+    0x00ff0000,
+    0xffff0000,
+    0x0000ff00,
+    0xff00ff00,
+    0x00ffff00,
+    0xffffff00,
+    0x000000ff,
+    0xff0000ff,
+    0x00ff00ff,
+    0xffff00ff,
+    0x0000ffff,
+    0xff00ffff,
+    0x00ffffff,
+    0xffffffff
+];
+
+pub const LOOKUP_TABLE_16BIT: [u64; 16] = [
+    0x0000000000000000,
+    0xffff000000000000,
+    0x0000ffff00000000,
+    0xffffffff00000000,
+    0x00000000ffff0000,
+    0xffff0000ffff0000,
+    0x0000ffffffff0000,
+    0xffffffffffff0000,
+    0x000000000000ffff,
+    0xffff00000000ffff,
+    0x0000ffff0000ffff,
+    0xffffffff0000ffff,
+    0x00000000ffffffff,
+    0xffff0000ffffffff,
+    0x0000ffffffffffff,
+    0xffffffffffffffff
+];
+
+pub const LOOKUP_TABLE_32BIT: [u128; 16] = [
+    0x00000000000000000000000000000000,
+    0xffffffff000000000000000000000000,
+    0x00000000ffffffff0000000000000000,
+    0xffffffffffffffff0000000000000000,
+    0x0000000000000000ffffffff00000000,
+    0xffffffff00000000ffffffff00000000,
+    0x00000000ffffffffffffffff00000000,
+    0xffffffffffffffffffffffff00000000,
+    0x000000000000000000000000ffffffff,
+    0xffffffff0000000000000000ffffffff,
+    0x00000000ffffffff00000000ffffffff,
+    0xffffffffffffffff00000000ffffffff,
+    0x0000000000000000ffffffffffffffff,
+    0xffffffff00000000ffffffffffffffff,
+    0x00000000ffffffffffffffffffffffff,
+    0xffffffffffffffffffffffffffffffff
+];
+
+pub const FONT_8X16: [u8; 4096] = [
     /* 0 0x00 '^@' */
     0x00, /* 00000000 */
     0x00, /* 00000000 */
@@ -4605,4 +4662,4 @@ const FONT_8X16: [u8; 4096] = [
     0x00, /* 00000000 */
     0x00, /* 00000000 */
     0x00, /* 00000000 */
-    0x00, /* 00000000 */];
+    0x00 /* 00000000 */];

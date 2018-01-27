@@ -8,6 +8,7 @@
 #![feature(abi_x86_interrupt)]
 #![feature(naked_functions)]
 #![feature(core_intrinsics)]
+#![feature(i128_type)]
 
 #![feature(asm)]
 
@@ -79,6 +80,9 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
         unsafe {*address = 0xffffff}
         address = (address as u64 + 4) as *mut u32;
     }
+    framebuffer::rgb_framebuffer::draw_char(framebuffer.framebuffer_addr, framebuffer.framebuffer_pitch,
+                                            49, 0xffffff, 0);
+
     /*let mut a:i64 = 10;
     unsafe{asm!("
                  syscall"
