@@ -111,7 +111,7 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
         println!("{}", *test1);
     }*/
 
-    loop{}
+    loop{println!("dddddddddddddddddddddddddddddddddddddddd")}
 }
 
 #[lang = "eh_personality"] #[no_mangle] pub extern fn eh_personality() {}

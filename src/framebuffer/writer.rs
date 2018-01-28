@@ -58,6 +58,7 @@ use core::ptr::Unique;
 pub struct Writer
 {
     column_position: u32,
+    row_position: u32,
     addr: u64,
     pitch: u32,
     width: u32,
@@ -86,6 +87,7 @@ impl Writer
                 1 => Some(Writer
                 {
                     column_position: 0,
+                    row_position: 0,
                     addr: framebuffer.framebuffer_addr,
                     pitch: framebuffer.framebuffer_pitch,
                     width: framebuffer.framebuffer_width,
@@ -105,6 +107,7 @@ impl Writer
                 2 => Some(Writer
                     {
                         column_position: 0,
+                        row_position: 0,
                         addr: framebuffer.framebuffer_addr,
                         pitch: framebuffer.framebuffer_pitch,
                         width: framebuffer.framebuffer_width,
@@ -128,16 +131,12 @@ impl Writer
             {
                 b'\n' => self.new_line(),
                 byte => {
-                    if self.column_position >= (self.width / self.char_width as u32) - 1
+                    if self.column_position >= (self.width / self.char_width as u32)
                         {
                             self.new_line();
-                            return;
                         }
 
-                    let row = (self.height / self.char_height as u32) - 1;
-                    let col = self.column_position;
-
-                    self.draw(row, col, byte);
+                    self.draw(self.row_position, self.column_position, byte);
                     self.column_position += 1;
                 }
             }
@@ -145,22 +144,28 @@ impl Writer
 
     fn new_line(&mut self)
     {
-        /*
-        for row in 1..(self.height / self.char_height) as usize
-            {
-                for col in 0..(self.width / self.char_width) as usize
-                    {
-                        let buffer = self.buffer();
-                        let character = buffer.chars[row][col].read();
-                        buffer.chars[row - 1][col].write(character);
-                    }
-            }
-        self.clear_row(BUFFER_HEIGHT-1);
+        self.row_position += 1;
         self.column_position = 0;
-        */
+        if self.row_position >= (self.height / self.char_height as u32)
+            {
+                self.shift();
+            }
     }
 
-    fn clear_row(&mut self, row: u32)
+
+    fn shift(&mut self)
+    {
+        use rlibc::memmove;
+        let row_size = self.pitch * self.char_height as u32;
+        let grid_height = self.height / self.char_height as u32;
+        unsafe {memmove(self.addr as *mut u8,
+                (self.addr + row_size as u64) as *mut u8,
+                        (row_size * (grid_height - 1)) as usize);}
+        self.row_position -= 1;
+        self.clear_row(self.row_position);
+    }
+
+    fn clear_row(&self, row: u32)
     {
         for col in 0..self.width / self.char_width as u32
             {
