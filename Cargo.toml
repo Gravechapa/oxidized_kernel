@@ -16,8 +16,8 @@ crate-type = ["staticlib"]
 rlibc = "1.0"
 volatile = "0.2.3"
 spin = "0.4.6"
-#multiboot2 = {git = "https://github.com/Gravechapa/multiboot2-elf64", branch = "gravechapa"}
-multiboot2 = {path = "/home/upagah/rust_projects/multiboot2-elf64/"}
+multiboot2 = {git = "https://github.com/Gravechapa/multiboot2-elf64", branch = "gravechapa"}
+#multiboot2 = {path = "/home/upagah/rust_projects/multiboot2-elf64/"}
 bitflags = "1.0.1"
 x86_64 = "0.1.2"
 once = "0.3.3"

@@ -60,6 +60,8 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
 
     let mut memory_controller = memory::init(mboot_info);
 
+    framebuffer::init(mboot_info);
+
     interrupts::init(&mut memory_controller);
 
     unsafe {syscall::init()};
@@ -72,16 +74,16 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
                     String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
 
 
-    let framebuffer = mboot_info.framebuffer_tag().expect("");
+    /*let framebuffer = mboot_info.framebuffer_tag().expect("");
     let frame_color = framebuffer.get_direct_rgb_color().expect("");
     let mut address: *mut u32 = framebuffer.framebuffer_addr as *mut _;
     for i in 0..framebuffer.framebuffer_width * framebuffer.framebuffer_height
     {
         unsafe {*address = 0xffffff}
         address = (address as u64 + 4) as *mut u32;
-    }
-    framebuffer::rgb_framebuffer::draw_char(framebuffer.framebuffer_addr, framebuffer.framebuffer_pitch,
-                                            49, 0xffffff, 0);
+    }*/
+    //framebuffer::rgb_framebuffer::draw_char(framebuffer.framebuffer_addr, framebuffer.framebuffer_pitch,
+    //                                        49, 0xffffff, 0);
 
     /*let mut a:i64 = 10;
     unsafe{asm!("

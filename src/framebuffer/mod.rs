@@ -1,5 +1,6 @@
-mod vga_text_buffer;
-pub mod rgb_framebuffer;
+mod writer;
+mod font_8x16;
+use multiboot2::BootInformation;
 
 use core::fmt::Write;
 use core::fmt;
@@ -15,8 +16,16 @@ macro_rules! print {
 
 pub fn print(args: fmt::Arguments)
 {
-    return;
-    WRITER.lock().write_fmt(args).unwrap();
+    let guard = GUARD.lock();
+    unsafe
+        {
+            match WRITER
+                {
+                    Some(ref mut writer) => writer.write_fmt(args).unwrap(),
+                    None => (),
+                }
+        }
+    drop(guard);
 }
 
 macro_rules! println {
@@ -26,12 +35,24 @@ macro_rules! println {
 
 use core::ptr::Unique;
 use spin::Mutex;
-pub static WRITER: Mutex<vga_text_buffer::Writer> = Mutex::new(vga_text_buffer::Writer::new());
+static GUARD: Mutex<()> = Mutex::new(());
+pub static mut WRITER: Option<writer::Writer> = None;
 
 pub fn clear_screen()
 {
     for _ in 0..BUFFER_HEIGHT
         {
             println!("");
+        }
+}
+
+pub fn init(mboot_info: &BootInformation)
+{
+    if mboot_info.framebuffer_tag().is_some()
+        {
+            let framebuffer = mboot_info.framebuffer_tag().expect("Framebuffer!");
+            let guard = GUARD.lock();
+            unsafe{WRITER = writer::Writer::new(framebuffer);}
+            drop(guard);
         }
 }

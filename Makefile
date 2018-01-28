@@ -40,6 +40,7 @@ gdb: debug
 cgdb: debug
 	@cgdb -d rust-gdb "build/oxidized_kernel-x86_64.bin" -ex "target remote :1234"
 
+
 gdb_efi: debug_efi
 	@rust-gdb "build/oxidized_kernel-x86_64.bin" -ex "target remote :1234"
 	
