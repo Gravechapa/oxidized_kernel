@@ -5,9 +5,6 @@ use multiboot2::BootInformation;
 use core::fmt::Write;
 use core::fmt;
 
-const  BUFFER_HEIGHT: usize = 25;
-const  BUFFER_WIDTH: usize = 80;
-
 macro_rules! print {
     ($($arg:tt)*) => ({
         $crate::framebuffer::print(format_args!($($arg)*));
@@ -40,10 +37,16 @@ pub static mut WRITER: Option<writer::Writer> = None;
 
 pub fn clear_screen()
 {
-    for _ in 0..BUFFER_HEIGHT
+    let guard = GUARD.lock();
+    unsafe
         {
-            println!("");
+            match WRITER
+                {
+                    Some(ref mut writer) => writer.clear_screen(),
+                    None => (),
+                }
         }
+    drop(guard);
 }
 
 pub fn init(mboot_info: &BootInformation)
@@ -55,4 +58,5 @@ pub fn init(mboot_info: &BootInformation)
             unsafe{WRITER = writer::Writer::new(framebuffer);}
             drop(guard);
         }
+    clear_screen();
 }

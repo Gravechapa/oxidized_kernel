@@ -83,7 +83,7 @@ impl Writer
     {
         match framebuffer.framebuffer_type
             {
-                0 => None,
+                0 => None/* Indexed color unsupported */,
                 1 => Some(Writer
                 {
                     column_position: 0,
@@ -104,7 +104,16 @@ impl Writer
                             }
                         },
                 }),
-                2 => Some(Writer
+                2 => {
+                    ///////// Disable cursor ///////////
+                    use x86_64::instructions::port::outb;
+                    unsafe
+                        {
+                            outb(0x3D4, 0x0A);
+                            outb(0x3D5, 0x20);
+                        }
+                    ////////////////////////////////////
+                    Some(Writer
                     {
                         column_position: 0,
                         row_position: 0,
@@ -118,9 +127,9 @@ impl Writer
                         fb_type: framebuffer.framebuffer_type,
                         color: CurrentColor
                             {
-                                color_code: ColorCode::new(Color::LightGreen, Color::Black),
+                                color_code: ColorCode::new(Color::Green, Color::Black),
                             },
-                    }),
+                    })},
                 _ => None,
             }
     }
@@ -173,6 +182,16 @@ impl Writer
             }
     }
 
+    pub fn clear_screen(&mut self)
+    {
+        for row in 0..self.height / self.char_height as u32
+            {
+                self.write_byte(b'\n');
+            }
+        self.row_position = 0;
+        self.column_position = 0;
+    }
+
     fn draw(&self, row: u32, col: u32, character: u8)
     {
         match self.fb_type
@@ -185,8 +204,21 @@ impl Writer
                                                    character,
                                                    unsafe {self.color.rgb.foreground},
                                                    unsafe {self.color.rgb.background}),
+                        16 => self.draw_char_rgb_16(self.addr +
+                                                        ((self.pitch * row * self.char_height as u32) +
+                                                            (col * self.char_width as u32) * 2) as u64,
+                                                    character,
+                                                    convert_color_to_16(unsafe {self.color.rgb.foreground}),
+                                                    convert_color_to_16(unsafe {self.color.rgb.background})),
+                        8 => self.draw_char_rgb_8(self.addr +
+                                                        ((self.pitch * row * self.char_height as u32) +
+                                                            (col * self.char_width as u32)) as u64,
+                                                    character,
+                                                  convert_color_to_8(unsafe {self.color.rgb.foreground}),
+                                                  convert_color_to_8(unsafe {self.color.rgb.background})),
                         _ => (),
                     },
+                2 => self.draw_char_ega(row, col, character),
                 _=> (),
             }
     }
@@ -215,6 +247,69 @@ impl Writer
                 address += self.pitch as u64;
             }
     }
+
+    fn draw_char_rgb_16(&self, address: u64, character: u8, foreground_colour: u16, background_colour: u16)
+    {
+        let mut address = address;
+        let char_start = character as usize * 16;
+        let font_data_for_char = &FONT_8X16[char_start..char_start + 16];
+        let packed_foreground: u64 = ((foreground_colour as u64) << 48) |
+            ((foreground_colour as u64) << 32) |
+            ((foreground_colour as u64) << 16) |
+            foreground_colour as u64;
+        let packed_background: u64 = ((background_colour as u64) << 48) |
+            ((background_colour as u64) << 32) |
+            ((background_colour as u64) << 16) |
+            background_colour as u64;
+
+        for row in 0..16
+            {
+                let row_data = font_data_for_char[row];
+                let mask1 = LOOKUP_TABLE_16BIT[(row_data >> 4) as usize];
+                let mask2 = LOOKUP_TABLE_16BIT[(row_data & 0x0F) as usize];
+                unsafe {*(address as *mut u64) = (packed_foreground & mask1) | (packed_background & !mask1);}
+                unsafe {*((address + 8) as *mut u64) = (packed_foreground & mask2) | (packed_background & !mask2);}
+                address += self.pitch as u64;
+            }
+
+
+    }
+
+    fn draw_char_rgb_8(&self, address: u64, character: u8, foreground_colour: u8, background_colour: u8)
+    {
+        let mut address = address;
+        let char_start = character as usize * 16;
+        let font_data_for_char = &FONT_8X16[char_start..char_start + 16];
+        let packed_foreground: u32 = ((foreground_colour as u32) << 24) |
+            ((foreground_colour as u32) << 16) |
+            ((foreground_colour as u32) << 8) |
+            foreground_colour as u32;
+        let packed_background: u32 = ((background_colour as u32) << 24) |
+            ((background_colour as u32) << 16) |
+            ((background_colour as u32) << 8) |
+            background_colour as u32;
+
+        for row in 0..16
+            {
+                let row_data = font_data_for_char[row];
+                let mask1 = LOOKUP_TABLE_8BIT[(row_data >> 4) as usize];
+                let mask2 = LOOKUP_TABLE_8BIT[(row_data & 0x0F) as usize];
+                unsafe {*(address as *mut u32) = (packed_foreground & mask1) | (packed_background & !mask1);}
+                unsafe {*((address + 4) as *mut u32) = (packed_foreground & mask2) | (packed_background & !mask2);}
+                address += self.pitch as u64;
+            }
+    }
+
+    fn draw_char_ega(&self, row: u32, col: u32, character: u8)
+    {
+        let address = self.addr as *mut ScreenChar;
+        unsafe {*address.offset((row * self.width + col) as isize) = ScreenChar
+            {
+                ascii_character: character,
+                color_code: self.color.color_code
+            };}
+    }
+
 }
 
 use core::fmt;

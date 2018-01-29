@@ -8,7 +8,8 @@ header_start:
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
 
     ; insert optional multiboot tags here
-
+    
+    ;console
     align 8
     dw 4
     dw 0
@@ -49,9 +50,6 @@ start:
     
     call set_up_page_tables
     call enable_paging
-    
-    ;to rust main second
-    mov esi, dword[p2_table]
     
     lgdt [gdt64.pointer]
     

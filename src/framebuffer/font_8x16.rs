@@ -1,3 +1,4 @@
+//lookups mirrored(little endian)
 pub const LOOKUP_TABLE_8BIT: [u32; 16] = [
     0x00000000,
     0xff000000,

@@ -50,13 +50,11 @@ static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
 
 
 #[no_mangle]
-pub extern fn rust_main(mboot_address: usize, test: usize)
+pub extern "C" fn rust_main(mboot_address: usize)
 {
     enable_extended_feature();
     enable_write_protect_bit();
     let mboot_info = unsafe{multiboot2::load(mboot_address)};
-
-    framebuffer::clear_screen();
 
     let mut memory_controller = memory::init(mboot_info);
 
@@ -73,18 +71,7 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
     unsafe{println!("{:?}\n {}\n {}", rsdp, String::from_raw_parts( rsdp.signature.as_ptr() as *mut u8, 8, 8),
                     String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
 
-
-    /*let framebuffer = mboot_info.framebuffer_tag().expect("");
-    let frame_color = framebuffer.get_direct_rgb_color().expect("");
-    let mut address: *mut u32 = framebuffer.framebuffer_addr as *mut _;
-    for i in 0..framebuffer.framebuffer_width * framebuffer.framebuffer_height
-    {
-        unsafe {*address = 0xffffff}
-        address = (address as u64 + 4) as *mut u32;
-    }*/
-    //framebuffer::rgb_framebuffer::draw_char(framebuffer.framebuffer_addr, framebuffer.framebuffer_pitch,
-    //                                        49, 0xffffff, 0);
-
+    println!("{}", mboot_info.framebuffer_tag().expect("").framebuffer_bpp);
     /*let mut a:i64 = 10;
     unsafe{asm!("
                  syscall"
@@ -104,14 +91,7 @@ pub extern fn rust_main(mboot_address: usize, test: usize)
     use alloc::boxed::Box;
     let heap_test = Box::new(42);
 
-    println!("{}", test);
-    let test1 = 0o177777_777_777_777_777_0002 as *mut i64;
-    /*unsafe {
-        *test1 = 10;
-        println!("{}", *test1);
-    }*/
-
-    loop{println!("dddddddddddddddddddddddddddddddddddddddd")}
+    loop{}
 }
 
 #[lang = "eh_personality"] #[no_mangle] pub extern fn eh_personality() {}
