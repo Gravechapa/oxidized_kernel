@@ -37,6 +37,7 @@ mod memory;
 mod interrupts;
 mod syscall;
 mod devices;
+mod acpi;
 
 use memory::heap_allocator::BumpAllocator;
 use devices::apic;

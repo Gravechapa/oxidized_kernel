@@ -153,11 +153,14 @@ impl Writer
 
     fn new_line(&mut self)
     {
-        self.row_position += 1;
         self.column_position = 0;
-        if self.row_position >= (self.height / self.char_height as u32)
+        if self.row_position >= (self.height / self.char_height as u32) - 1
             {
                 self.shift();
+            }
+        else
+            {
+                self.row_position += 1;
             }
     }
 
@@ -170,8 +173,7 @@ impl Writer
         unsafe {memmove(self.addr as *mut u8,
                 (self.addr + row_size as u64) as *mut u8,
                         (row_size * (grid_height - 1)) as usize);}
-        self.row_position -= 1;
-        self.clear_row(self.row_position);
+        self.clear_row((self.height / self.char_height as u32) - 1);
     }
 
     fn clear_row(&self, row: u32)
@@ -186,7 +188,7 @@ impl Writer
     {
         for row in 0..self.height / self.char_height as u32
             {
-                self.write_byte(b'\n');
+                self.shift();
             }
         self.row_position = 0;
         self.column_position = 0;
