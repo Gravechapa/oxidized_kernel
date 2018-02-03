@@ -100,7 +100,7 @@ impl Writer
                         {rgb: RgbColor
                             {
                                 foreground: 0x18F018,
-                                background: 0,
+                                background: 0x232323,
                             }
                         },
                 }),
