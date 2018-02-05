@@ -14,7 +14,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 rlibc = "1.0"
-volatile = "0.2.3"
 spin = "0.4.6"
 multiboot2 = {git = "https://github.com/Gravechapa/multiboot2-elf64", branch = "gravechapa"}
 #multiboot2 = {path = "/home/upagah/rust_projects/multiboot2-elf64/"}

@@ -186,9 +186,17 @@ impl Writer
 
     pub fn clear_screen(&mut self)
     {
-        for row in 0..self.height / self.char_height as u32
+        match self.fb_type
             {
-                self.shift();
+                1 => match self.bpp
+                    {
+                        32 => self.clear_rgb_32(),
+                        16 => self.clear_rgb_16(),
+                        8 => self.clear_rgb_8(),
+                        _ => (),
+                    },
+                2 => self.clear_ega(),
+                _=> (),
             }
         self.row_position = 0;
         self.column_position = 0;
@@ -203,21 +211,15 @@ impl Writer
                         32 => self.draw_char_rgb_32(self.addr +
                                                        ((self.pitch * row * self.char_height as u32) +
                                                            (col * self.char_width as u32) * 4) as u64,
-                                                   character,
-                                                   unsafe {self.color.rgb.foreground},
-                                                   unsafe {self.color.rgb.background}),
+                                                   character),
                         16 => self.draw_char_rgb_16(self.addr +
                                                         ((self.pitch * row * self.char_height as u32) +
                                                             (col * self.char_width as u32) * 2) as u64,
-                                                    character,
-                                                    convert_color_to_16(unsafe {self.color.rgb.foreground}),
-                                                    convert_color_to_16(unsafe {self.color.rgb.background})),
+                                                    character),
                         8 => self.draw_char_rgb_8(self.addr +
                                                         ((self.pitch * row * self.char_height as u32) +
                                                             (col * self.char_width as u32)) as u64,
-                                                    character,
-                                                  convert_color_to_8(unsafe {self.color.rgb.foreground}),
-                                                  convert_color_to_8(unsafe {self.color.rgb.background})),
+                                                    character),
                         _ => (),
                     },
                 2 => self.draw_char_ega(row, col, character),
@@ -225,8 +227,10 @@ impl Writer
             }
     }
 
-    fn draw_char_rgb_32(&self, address: u64, character: u8, foreground_colour: u32, background_colour: u32)
+    fn draw_char_rgb_32(&self, address: u64, character: u8)
     {
+        let foreground_colour = unsafe {self.color.rgb.foreground};
+        let background_colour = unsafe {self.color.rgb.background};
         let mut address = address;
         let char_start = character as usize * 16;
         let font_data_for_char = &FONT_8X16[char_start..char_start + 16];
@@ -250,8 +254,10 @@ impl Writer
             }
     }
 
-    fn draw_char_rgb_16(&self, address: u64, character: u8, foreground_colour: u16, background_colour: u16)
+    fn draw_char_rgb_16(&self, address: u64, character: u8)
     {
+        let foreground_colour = convert_color_to_16(unsafe {self.color.rgb.foreground});
+        let background_colour = convert_color_to_16(unsafe {self.color.rgb.background});
         let mut address = address;
         let char_start = character as usize * 16;
         let font_data_for_char = &FONT_8X16[char_start..char_start + 16];
@@ -277,8 +283,10 @@ impl Writer
 
     }
 
-    fn draw_char_rgb_8(&self, address: u64, character: u8, foreground_colour: u8, background_colour: u8)
+    fn draw_char_rgb_8(&self, address: u64, character: u8)
     {
+        let foreground_colour = convert_color_to_8(unsafe {self.color.rgb.foreground});
+        let background_colour = convert_color_to_8(unsafe {self.color.rgb.background});
         let mut address = address;
         let char_start = character as usize * 16;
         let font_data_for_char = &FONT_8X16[char_start..char_start + 16];
@@ -310,6 +318,45 @@ impl Writer
                 ascii_character: character,
                 color_code: self.color.color_code
             };}
+    }
+
+    fn clear_rgb_32(&self)
+    {
+        let background_colour = unsafe {self.color.rgb.background};
+        let address = self.addr as *mut u32;
+        for i in 0..(self.pitch * self.height) / 4
+            {
+                unsafe {*address.offset(i as isize) = background_colour};
+            }
+    }
+
+    fn clear_rgb_16(&self)
+    {
+        let background_colour = convert_color_to_16(unsafe {self.color.rgb.background});
+        let address = self.addr as *mut u16;
+        for i in 0..(self.pitch * self.height) / 2
+            {
+                unsafe {*address.offset(i as isize) = background_colour};
+            }
+    }
+
+    fn clear_rgb_8(&self)
+    {
+        let background_colour = convert_color_to_8(unsafe {self.color.rgb.background});
+        use rlibc::memset;
+        unsafe {memset(self.addr as *mut u8,
+                       background_colour as i32, (self.pitch * self.height) as usize)};
+    }
+
+    fn clear_ega(&self)
+    {
+        let screen_char = ScreenChar{ascii_character: b' ',
+                                            color_code: unsafe {self.color.color_code},};
+        let address = self.addr as *mut ScreenChar;
+        for i in 0..(self.width * self.height)
+            {
+                unsafe {*address.offset(i as isize) = screen_char};
+            }
     }
 
 }
