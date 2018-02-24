@@ -65,13 +65,14 @@ pub extern "C" fn rust_main(mboot_address: usize)
     unsafe {syscall::init()};
 
     apic::init();
+    acpi::init(mboot_info);
 
-    use alloc::String;
+    /*use alloc::String;
     let rsdp = mboot_info.acpi_2_tag().expect("").get_rsdp();
     unsafe{println!("{:?}\n {}\n {}", rsdp, String::from_raw_parts( rsdp.signature.as_ptr() as *mut u8, 8, 8),
                     String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
 
-    println!("{}", mboot_info.framebuffer_tag().expect("").framebuffer_bpp);
+    println!("{}", mboot_info.framebuffer_tag().expect("").framebuffer_bpp);*/
     /*let mut a:i64 = 10;
     unsafe{asm!("
                  syscall"
