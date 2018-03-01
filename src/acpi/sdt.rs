@@ -34,12 +34,12 @@ impl Sdt
 
     pub fn check(& self)
     {
-        let mut checksum:i8 = 0;
+        let mut checksum:i16 = 0;
         let pointer = self as *const Sdt as *const i8;
         for i in 0..self.length
             {
-                unsafe {checksum = *pointer.offset(i as isize);}
+                unsafe {checksum = *pointer.offset(i as isize) as i16;}
             }
-        assert!(checksum == 0, "SDT check: FAIL");
+        assert!(checksum & 0xff == 0, "SDT check: FAIL");
     }
 }
