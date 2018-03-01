@@ -6,8 +6,12 @@ use alloc::String;
 mod sdt;
 mod xsdt;
 
+use self::xsdt::Xsdt;
+
 pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryController)
 {
+    assert_has_not_been_called!("acpi::init must be called only once");
+    println!("ACPI initing");
     let rsdp = mboot_info.acpi_2_tag().expect("RSDP not found").get_rsdp();
     let mut checksum:i8 = 0;
 
@@ -50,4 +54,7 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
     println!("ACPIv2 RSDP check: OK");
 
     unsafe{println!("ACPI OEM: {}", String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
+
+    let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
+
 }
