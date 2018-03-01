@@ -1,11 +1,18 @@
 use multiboot2::BootInformation;
+use memory::MemoryController;
 
 use alloc::String;
 
-pub fn init(mboot_info: &BootInformation)
+mod sdt;
+mod xsdt;
+
+pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryController)
 {
     let rsdp = mboot_info.acpi_2_tag().expect("RSDP not found").get_rsdp();
     let mut checksum:i8 = 0;
+
+    /*unsafe{println!("{:?}\n {}\n {}", rsdp, String::from_raw_parts( rsdp.signature.as_ptr() as *mut u8, 8, 8),
+                    String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}*/
 
     //acpi v1 checksum
     for i in 0..8

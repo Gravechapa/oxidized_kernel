@@ -8,7 +8,7 @@ use self::paging::PhysicalAddress;
 pub use self::paging::remap_the_kernel;
 use multiboot2::BootInformation;
 pub use self::stack_allocator::Stack;
-use self::paging::entry::EntryFlags;
+pub use self::paging::entry::EntryFlags;
 
 pub fn init(mboot_info: &BootInformation) -> MemoryController
 {
@@ -80,6 +80,11 @@ impl MemoryController
                                     ref mut stack_allocator} = self;
         stack_allocator.alloc_stack(active_table, frame_allocator, size_in_pages)
     }
+
+    pub fn identity_map(&mut self, frame: Frame, flags: EntryFlags)
+    {
+        self.active_table.identity_map(frame, flags, &mut self.frame_allocator);
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -98,7 +103,7 @@ pub trait FrameAllocator
 
 impl Frame 
 {
-    fn range_inclusive(start: Frame, end: Frame) -> FrameIter
+    pub fn range_inclusive(start: Frame, end: Frame) -> FrameIter
     {
         FrameIter
             {
@@ -107,23 +112,23 @@ impl Frame
             }
     }
 
-    fn containing_address(address: usize) -> Frame
+    pub fn containing_address(address: usize) -> Frame
     {
         Frame{number: address / PAGE_SIZE}
     }
 
-    fn start_address(&self) -> PhysicalAddress
+    pub fn start_address(&self) -> PhysicalAddress
     {
         self.number * PAGE_SIZE
     }
 
-    fn clone(&self) -> Frame
+    pub fn clone(&self) -> Frame
     {
         Frame {number: self.number}
     }
 }
 
-struct FrameIter
+pub struct FrameIter
 {
     start: Frame,
     end: Frame,
