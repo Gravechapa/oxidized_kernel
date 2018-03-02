@@ -17,7 +17,7 @@ impl Xsdt
         Xsdt{sdt}
     }
 
-    pub fn get_entries(&self, memory_controller: &mut MemoryController) -> BTreeMap<String, &Sdt>
+    pub fn get_entries(&self, memory_controller: &mut MemoryController) -> BTreeMap<String, &'static Sdt>
     {
         let mut map = BTreeMap::new();
         let entries = ((self.sdt as *const Sdt as usize) + SDT_SIZE as usize) as *mut u64;

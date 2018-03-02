@@ -10,8 +10,17 @@ mod xsdt;
 mod fadt;
 
 use self::xsdt::Xsdt;
+use self::fadt::Fadt;
+use self::sdt::Sdt;
+
+pub struct AcpiController
+{
+    xsdt: Xsdt,
+    entries_map: BTreeMap<String, &'static Sdt>,
+}
 
 pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryController)
+    -> AcpiController
 {
     assert_has_not_been_called!("acpi::init must be called only once");
     println!("ACPI initing");
@@ -60,5 +69,14 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
 
     let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
     let entries_map = xsdt.get_entries(memory_controller);
-    println!("{:?}", entries_map);
+    let fadt = Fadt::new(entries_map.get("FACP").expect("FADT not found"));
+
+
+    println!("{:?}\n", entries_map);
+
+    AcpiController
+        {
+            xsdt,
+            entries_map,
+        }
 }

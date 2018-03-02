@@ -62,3 +62,11 @@ pub struct Fadt
     pub sleep_status_reg: Gas,
     pub hypervisor_vendor_identity: u64,
 }
+
+impl Fadt
+{
+    pub fn new(sdt: &'static Sdt) -> &mut Fadt
+    {
+        unsafe {&mut*(sdt as *const Sdt as *mut Fadt)}
+    }
+}
