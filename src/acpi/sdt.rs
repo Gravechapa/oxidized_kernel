@@ -28,7 +28,6 @@ impl Sdt
                                                EntryFlags::PRESENT | EntryFlags::NO_EXECUTE);
             }
         let sdt = unsafe {&*(address as *const Sdt)};
-        sdt.check();
         for frame in Frame::range_inclusive(Frame::containing_address(address + 4096),
                                             Frame::containing_address(address + sdt.length as usize))
             {
@@ -37,16 +36,19 @@ impl Sdt
                         memory_controller.identity_map(frame, EntryFlags::PRESENT | EntryFlags::NO_EXECUTE);
                     }
             }
+        sdt.check();
         sdt
     }
 
     pub fn check(& self)
     {
+        assert!(self.length != 0);
         let mut checksum:i16 = 0;
         let pointer = self as *const Sdt as *const i8;
         for i in 0..self.length
             {
-                unsafe {checksum = *pointer.offset(i as isize) as i16;}
+                unsafe {checksum += *pointer.offset(i as isize) as i16;}
+
             }
         assert!(checksum & 0xff == 0, "SDT check: FAIL");
     }
