@@ -4,6 +4,7 @@ use alloc::BTreeMap;
 
 use alloc::String;
 
+mod gas;
 mod sdt;
 mod xsdt;
 mod fadt;
