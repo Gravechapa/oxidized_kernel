@@ -30,7 +30,6 @@ macro_rules! println {
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-use core::ptr::Unique;
 use spin::Mutex;
 static GUARD: Mutex<()> = Mutex::new(());
 pub static mut WRITER: Option<writer::Writer> = None;

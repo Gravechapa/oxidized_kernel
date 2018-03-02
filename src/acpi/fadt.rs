@@ -1,7 +1,7 @@
 use super::sdt::Sdt;
 use super::gas::Gas;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 #[repr(packed)]
 pub struct Fadt
 {

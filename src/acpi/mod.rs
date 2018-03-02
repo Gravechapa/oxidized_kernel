@@ -70,10 +70,8 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
     let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
     let entries_map = xsdt.get_entries(memory_controller);
     let fadt = Fadt::new(entries_map.get("FACP").expect("FADT not found"));
-
-
     println!("{:?}\n", entries_map);
-
+    println!("{:?}", fadt);
     AcpiController
         {
             xsdt,

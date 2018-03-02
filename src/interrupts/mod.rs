@@ -7,7 +7,7 @@ use x86_64::structures::idt::Idt;
 use self::exceptions::*;
 use memory::MemoryController;
 use x86_64::structures::tss::TaskStateSegment;
-use x86_64::{VirtualAddress, PrivilegeLevel};
+use x86_64::{VirtualAddress};
 use spin::Once;
 use self::irq::*;
 

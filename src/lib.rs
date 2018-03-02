@@ -82,10 +82,10 @@ pub extern "C" fn rust_main(mboot_address: usize)
 
     // trigger a stack overflow
     stack_overflow();*/
-
+    /*
     use alloc::boxed::Box;
     let heap_test = Box::new(42);
-
+    */
     loop{}
 }
 

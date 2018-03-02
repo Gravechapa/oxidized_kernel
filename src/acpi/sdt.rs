@@ -3,7 +3,7 @@ use memory::EntryFlags;
 
 pub const SDT_SIZE: u8 = 36;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 #[repr(packed)]
 pub struct Sdt
 {

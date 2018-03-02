@@ -53,8 +53,6 @@ struct ScreenChar
     color_code: ColorCode,
 }
 
-use core::ptr::Unique;
-
 pub struct Writer
 {
     column_position: u32,
