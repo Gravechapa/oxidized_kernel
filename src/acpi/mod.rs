@@ -56,5 +56,5 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
     unsafe{println!("ACPI OEM: {}", String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
 
     let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
-
+    xsdt.get_entries(memory_controller);
 }

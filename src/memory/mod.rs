@@ -9,6 +9,7 @@ pub use self::paging::remap_the_kernel;
 use multiboot2::BootInformation;
 pub use self::stack_allocator::Stack;
 pub use self::paging::entry::EntryFlags;
+use self::paging::Page;
 
 pub fn init(mboot_info: &BootInformation) -> MemoryController
 {
@@ -36,7 +37,6 @@ pub fn init(mboot_info: &BootInformation) -> MemoryController
 
     let mut active_table = remap_the_kernel(&mut frame_allocator, mboot_info);
 
-    use self::paging::Page;
     use {HEAP_START, HEAP_SIZE};
 
     let heap_start_page = Page::containing_address(HEAP_START);
@@ -84,6 +84,11 @@ impl MemoryController
     pub fn identity_map(&mut self, frame: Frame, flags: EntryFlags)
     {
         self.active_table.identity_map(frame, flags, &mut self.frame_allocator);
+    }
+
+    pub fn check(&self, vaddress: usize) ->bool
+    {
+        self.active_table.translate_page(Page::containing_address(vaddress)).is_some()
     }
 }
 
