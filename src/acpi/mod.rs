@@ -1,10 +1,12 @@
 use multiboot2::BootInformation;
 use memory::MemoryController;
+use alloc::BTreeMap;
 
 use alloc::String;
 
 mod sdt;
 mod xsdt;
+mod fadt;
 
 use self::xsdt::Xsdt;
 
@@ -56,5 +58,6 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
     unsafe{println!("ACPI OEM: {}", String::from_raw_parts(rsdp.oem_id.as_ptr() as *mut u8, 6, 6));}
 
     let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
-    xsdt.get_entries(memory_controller);
+    let entries_map = xsdt.get_entries(memory_controller);
+    println!("{:?}", entries_map);
 }
