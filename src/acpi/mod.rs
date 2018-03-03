@@ -8,6 +8,7 @@ mod gas;
 mod sdt;
 mod xsdt;
 mod fadt;
+mod madt;
 
 use self::xsdt::Xsdt;
 use self::fadt::Fadt;
