@@ -19,6 +19,11 @@ pub fn get_base_address() -> u64
     rdmsr(IA32_APIC_BASE) & 0xffffffffff000
 }
 
+pub unsafe fn eoi()
+{
+    *((get_base_address() + 0xb0) as *mut u32) = 0;
+}
+
 pub fn init() /*-> Box<ApicController>*/
 {
     assert_has_not_been_called!("devices::apic::init must be called only once");

@@ -87,7 +87,13 @@ pub extern "C" fn rust_main(mboot_address: usize)
     use alloc::boxed::Box;
     let heap_test = Box::new(42);
     */
-    loop{}
+    loop{ unsafe{asm!("
+                 hlt"
+                :
+                :
+                :
+                :"intel", "volatile");}
+    }
 }
 
 #[lang = "eh_personality"] #[no_mangle] pub extern fn eh_personality() {}
