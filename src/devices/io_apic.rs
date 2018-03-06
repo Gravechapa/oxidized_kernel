@@ -28,7 +28,7 @@ pub fn init(acpi_controller: &AcpiController, memory_controller: &mut MemoryCont
 
     io_apics[0].set_redir_entry(EntryData
         {
-            vector: 1,
+            vector: 0x21,
             delivery_mode: 0,
             dest_mode: 0,
             delivery_status: 0,
@@ -44,6 +44,9 @@ pub fn init(acpi_controller: &AcpiController, memory_controller: &mut MemoryCont
             println!("{:?}", io_apics[0].get_redir_entry(i));
         }*/
     //println!("{:?}", io_apics);
+
+    use x86_64::instructions::interrupts::enable;
+    unsafe {enable();}
 }
 
 //regs
@@ -204,5 +207,29 @@ pub union RedirectionEntry
 
 fn disable_8259pic()
 {
+    use x86_64::instructions::port::outb;
+    unsafe
+        {
+            // starts the initialization sequence (in cascade mode)
+            outb(0x20, 0x11);
+            outb(0xa0, 0x11);
 
+            // Master PIC vector offset
+            // Slave PIC vector offset
+            outb(0x21, 0x20);
+            outb(0xa1, 0x28);
+
+            // Tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+            // Tell Slave PIC its cascade identity (0000 0010)
+            outb(0x21, 4);
+            outb(0xa1, 2);
+
+            // 8086/88 (MCS-80/85) mode
+            outb(0x21, 1);
+            outb(0xa1, 1);
+
+            //Disable the PIC
+            outb(0x21, 0xff);
+            outb(0xa1, 0xff);
+        }
 }
