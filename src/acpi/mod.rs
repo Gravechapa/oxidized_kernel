@@ -8,12 +8,11 @@ mod gas;
 mod sdt;
 mod xsdt;
 mod fadt;
-mod madt;
+pub mod madt;
 
 use self::xsdt::Xsdt;
 use self::fadt::Fadt;
 use self::sdt::Sdt;
-pub use self::madt::Madt;
 
 pub struct AcpiController
 {

@@ -10,7 +10,7 @@ bitflags!
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
-struct InterruptControllerHeader
+pub struct InterruptControllerHeader
 {
     pub structure_type: u8,
     pub length: u8,
@@ -18,7 +18,7 @@ struct InterruptControllerHeader
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
-struct IOApic
+pub struct IOApic
 {
     pub header: InterruptControllerHeader,
     pub io_apic_id: u8,
@@ -29,7 +29,7 @@ struct IOApic
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
-struct InterruptSourceOverride
+pub struct InterruptSourceOverride
 {
     pub header: InterruptControllerHeader,
     pub bus: u8,
