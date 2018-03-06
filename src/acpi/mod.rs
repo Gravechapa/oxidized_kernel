@@ -13,6 +13,7 @@ mod madt;
 use self::xsdt::Xsdt;
 use self::fadt::Fadt;
 use self::sdt::Sdt;
+use self::madt::Madt;
 
 pub struct AcpiController
 {
@@ -72,7 +73,14 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
     let entries_map = xsdt.get_entries(memory_controller);
     let fadt = Fadt::new(entries_map.get("FACP").expect("FADT not found"));
     println!("{:?}\n", entries_map);
-    println!("{:?}", fadt);
+    //println!("{:?}", fadt);
+
+    let madt = Madt::new(entries_map.get("APIC").expect("MADT not found"));
+    for interrupt_controller in madt.get_iter()
+        {
+            println!("{:?}", interrupt_controller);
+        }
+
     AcpiController
         {
             xsdt,
