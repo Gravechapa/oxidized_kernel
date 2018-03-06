@@ -21,7 +21,7 @@ pub fn get_base_address() -> u64
 
 pub fn init() /*-> Box<ApicController>*/
 {
-    assert_has_not_been_called!("devices::apic::init() must be called only once");
+    assert_has_not_been_called!("devices::apic::init must be called only once");
     assert!(check_apic());
 
     let apic: Box<ApicController>;

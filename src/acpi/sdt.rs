@@ -25,7 +25,7 @@ impl Sdt
         if !memory_controller.check(address)
             {
                 memory_controller.identity_map(Frame::containing_address(address),
-                                               EntryFlags::PRESENT | EntryFlags::NO_EXECUTE);
+                                               EntryFlags::NO_EXECUTE);
             }
         let sdt = unsafe {&*(address as *const Sdt)};
         for frame in Frame::range_inclusive(Frame::containing_address(address + 4096),
@@ -33,7 +33,7 @@ impl Sdt
             {
                 if !memory_controller.check(address)
                     {
-                        memory_controller.identity_map(frame, EntryFlags::PRESENT | EntryFlags::NO_EXECUTE);
+                        memory_controller.identity_map(frame, EntryFlags::NO_EXECUTE);
                     }
             }
         sdt.check();
