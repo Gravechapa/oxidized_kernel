@@ -85,7 +85,7 @@ impl<'a> Iterator for InterruptControllerIter<'a>
     type Item = InterruptController;
     fn next(&mut self) -> Option<Self::Item>
     {
-        if self.offset != self.madt.header.length as usize
+        if self.offset < self.madt.header.length as usize
             {
                 let ic_header =
                     unsafe{&*(((self.madt as *const Madt as usize) + self.offset) as *const InterruptControllerHeader)};

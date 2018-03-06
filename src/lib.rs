@@ -58,14 +58,15 @@ pub extern "C" fn rust_main(mboot_address: usize)
 
     let mut memory_controller = memory::init(mboot_info);
 
-    framebuffer::init(mboot_info);
-
     interrupts::init(&mut memory_controller);
 
-    unsafe {syscall::init()};
+    framebuffer::init(mboot_info);
 
-    apic::init();
-    acpi::init(mboot_info, &mut memory_controller);
+    let acpi_controller = acpi::init(mboot_info, &mut memory_controller);
+
+    devices::init(&acpi_controller, &mut memory_controller);
+
+    unsafe {syscall::init()};
 
     /*let mut a:i64 = 10;
     unsafe{asm!("

@@ -23,6 +23,7 @@ unsafe impl<'a> Alloc for &'a BumpAllocator
 {
     unsafe fn alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr>
     {
+        println!("Heap!!!");
         loop
             {
                 // load current state of the `next` field
@@ -50,6 +51,7 @@ unsafe impl<'a> Alloc for &'a BumpAllocator
 
     unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout)
     {
+        println!("Memory leak!!!");
         // do nothing, leak memory
     }
 }

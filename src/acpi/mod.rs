@@ -13,12 +13,20 @@ mod madt;
 use self::xsdt::Xsdt;
 use self::fadt::Fadt;
 use self::sdt::Sdt;
-use self::madt::Madt;
+pub use self::madt::Madt;
 
 pub struct AcpiController
 {
     xsdt: Xsdt,
     entries_map: BTreeMap<String, &'static Sdt>,
+}
+
+impl AcpiController
+{
+    pub fn get_entries_map(&self) -> &BTreeMap<String, &'static Sdt>
+    {
+        &self.entries_map
+    }
 }
 
 pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryController)
@@ -71,15 +79,11 @@ pub fn init(mboot_info: &BootInformation, memory_controller: &mut MemoryControll
 
     let xsdt = Xsdt::init(rsdp.xsdt_address as usize, memory_controller);
     let entries_map = xsdt.get_entries(memory_controller);
+
+    /*
     let fadt = Fadt::new(entries_map.get("FACP").expect("FADT not found"));
     println!("{:?}\n", entries_map);
-    //println!("{:?}", fadt);
-
-    let madt = Madt::new(entries_map.get("APIC").expect("MADT not found"));
-    for interrupt_controller in madt.get_iter()
-        {
-            println!("{:?}", interrupt_controller);
-        }
+    //println!("{:?}", fadt);*/
 
     AcpiController
         {
