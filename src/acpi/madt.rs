@@ -18,6 +18,16 @@ pub struct InterruptControllerHeader
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
+pub struct Apic
+{
+    pub header: InterruptControllerHeader,
+    pub acpi_processor_uid: u8,
+    pub apic_id: u8,
+    pub flags: u32,
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(packed)]
 pub struct IOApic
 {
     pub header: InterruptControllerHeader,
@@ -41,6 +51,7 @@ pub struct InterruptSourceOverride
 #[derive(Debug)]
 pub enum InterruptController
 {
+    Apic(&'static Apic),
     IOApic(&'static IOApic),
     InterruptSourceOverride(&'static InterruptSourceOverride),
     Another(u8),
@@ -71,6 +82,11 @@ impl Madt
                 offset: 8 + SDT_SIZE as usize,
             }
     }
+
+    pub fn get_flags(&self) -> u32
+    {
+        self.flags
+    }
 }
 
 #[derive(Debug)]
@@ -92,6 +108,8 @@ impl<'a> Iterator for InterruptControllerIter<'a>
 
                 let interrupt_controller = match ic_header.structure_type
                     {
+                        0 => InterruptController::Apic(
+                            unsafe{&*((ic_header as *const InterruptControllerHeader) as *const Apic)}),
                         1 => InterruptController::IOApic(
                             unsafe{&*((ic_header as *const InterruptControllerHeader) as *const IOApic)}),
                         2 => InterruptController::InterruptSourceOverride(
