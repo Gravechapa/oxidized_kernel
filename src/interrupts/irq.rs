@@ -13,7 +13,7 @@ pub extern "x86-interrupt" fn keyboard_irq(stack_frame: &mut ExceptionStackFrame
 
 unsafe fn get_scancode() -> u8
 {
-    let mut c=0u8;
+    let mut c= 0u8;
     loop
         {
             if inb(0x60) != c

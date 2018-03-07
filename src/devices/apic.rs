@@ -21,7 +21,14 @@ pub fn get_base_address() -> u64
 
 pub unsafe fn eoi()
 {
-    *((get_base_address() + 0xb0) as *mut u32) = 0;
+    if check_x2apic()
+        {
+            wrmsr(msr::IA32_X2APIC_EOI, 0);
+        }
+    else
+        {
+            *((get_base_address() + 0xb0) as *mut u32) = 0;
+        }
 }
 
 pub fn init() /*-> Box<ApicController>*/
